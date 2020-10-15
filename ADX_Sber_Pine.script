@@ -1,0 +1,51 @@
+//@version=2
+//study("ADX and DI")
+strategy(title="MyStrategy", shorttitle="MS", pyramiding = 2)
+
+len = input(title="Length", type=integer, defval=14)
+th = input(title="threshold", type=integer, defval=35)
+
+Y1 = input(title="Налало периода - год", defval=2018)
+M1 = input(title="Налало периода - месяц", defval=1)
+D1 = input(title="Налало периода - день", defval=1)
+Y2 = input(title="Конец периода - год", defval=2020)
+M2 = input(title="Конец периода - месяц", defval=12)
+D2 = input(title="Конец периода - день", defval=31)
+T1 = timestamp(Y1, M1, D1, 00, 00)
+T2 = timestamp(Y2, M2, D2, 23, 59)
+
+now = time
+
+period = T1 < now and T2 > now ? true : false
+
+TrueRange = max(max(high-low, abs(high-nz(close[1]))), abs(low-nz(close[1])))
+DirectionalMovementPlus = high-nz(high[1]) > nz(low[1])-low ? max(high-nz(high[1]), 0): 0
+DirectionalMovementMinus = nz(low[1])-low > high-nz(high[1]) ? max(nz(low[1])-low, 0): 0
+
+
+SmoothedTrueRange = nz(SmoothedTrueRange[1]) - (nz(SmoothedTrueRange[1])/len) + TrueRange
+SmoothedDirectionalMovementPlus = nz(SmoothedDirectionalMovementPlus[1]) - (nz(SmoothedDirectionalMovementPlus[1])/len) + DirectionalMovementPlus
+SmoothedDirectionalMovementMinus = nz(SmoothedDirectionalMovementMinus[1]) - (nz(SmoothedDirectionalMovementMinus[1])/len) + DirectionalMovementMinus
+
+DIPlus = SmoothedDirectionalMovementPlus / SmoothedTrueRange * 100
+DIMinus = SmoothedDirectionalMovementMinus / SmoothedTrueRange * 100
+DX = abs(DIPlus-DIMinus) / (DIPlus+DIMinus)*100
+ADX = sma(DX, len)
+tn_line = hline(th)
+
+plot(DIPlus, color=green, title="DI+")
+plot(DIMinus, color=red, title="DI-")
+plot(ADX, color=black, title="ADX")
+hline(th, color=black, linestyle=dashed)
+
+//iff (crossover(ADX, th) and period, bgcolor(green, transp = 50), na)
+bgcolor(crossover(ADX, th) ? green : na, transp = 50)
+bgcolor(crossunder(ADX, th) ? red : na, transp = 50)
+
+x =(crossover(ADX, th))
+x1 = DIMinus < DIPlus
+strategy.entry("buy", true, 1, when = x and x1 and period)
+strategy.close("buy", when  = (cross(DIMinus, DIPlus)))
+plot(strategy.position_size)
+
+
