@@ -1,6 +1,6 @@
 is_run = true
 let =""
-posicia = 50
+posicia = 200
 lag = 0
 
 
@@ -27,9 +27,10 @@ function OnQuote(class, sec )
 			if z.offer[i].quantity ~= nil then
 				lag = lag + tonumber(z.offer[i].quantity)
 			
-				if lag > 50 and z3 == 0 then
+				if lag > posicia and z3 == 0 then
                     z3 = tonumber(z.offer[i].price)
                     z4 = tonumber(z.offer[1].price)
+                    z5 = (z4-z3)/z4*100
 				    --z4 = tonumber(z.offer[z.offer_count+0].price) - так для половинке стакана  Покупки
 				    --message("Full close :  " .. z3 .. " prosadka po cene - ".. ( tonumber(z3-z4)))
 				end
@@ -38,7 +39,7 @@ function OnQuote(class, sec )
 								let = let .. "N-"..i.."  - price - ".. (z.offer[i].price)..";  "..(z.offer[i].quantity).."\n"
 		end
 								message (let)
-    message("Full close :  " .. z3 .. " prosadka po cene - ".. ( tonumber(z4-z3)))
+    message("Full close :  " .. z3 .. " prosadka po cene - ".. ( tonumber(z4-z3)) .. " - v % - " .. z5)
 								let=""
 								lag = 0
 	end
