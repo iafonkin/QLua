@@ -8,6 +8,7 @@ z = 0
 gi = ""
 Q_sec = 0 -- колво общая позиция хеджирукемой бумаги
 t_dat = {{}}
+lag1 = 1
 
 -- округдение до нужного после запятой
 math.round = function(num, idp)
@@ -38,8 +39,8 @@ end
 
 
 function GetData()
--- Расчёт кол-ва акций
-z = getNumberOf("depo_limits")
+	-- Расчёт кол-ва акций
+	z = getNumberOf("depo_limits")
 	
 	for k=0, z-1 do
 		gi = getItem("depo_limits", k) 							-- берем данные k -ой строки (нумерация с 0) из таблицы fdepo_limits
@@ -53,7 +54,7 @@ z = getNumberOf("depo_limits")
     FutInfo = getSecurityInfo(a[3], a[7]) -- запрос таблицы данных фьяча
 	FutLot = FutInfo.lot_size  -- размер лота
 
--- Даннвые по фьючерсу
+	-- Даннвые по фьючерсу
 	local request_result_go = ParamRequest( a[3], a[7], "BAYDEPO")   -- Подписываемся на получение ГО на продажу
 	local request_result_price = ParamRequest ( a[3], a[7], "LAST")
 	local request_result_life = ParamRequest ( a[3], a[7], "DAYS_TO_MAT_DATE")
@@ -63,8 +64,8 @@ z = getNumberOf("depo_limits")
 	fut_price = getParamEx2( a[3], a[7], "LAST").param_value
 	fut_life = getParamEx2( a[3], a[7], "DAYS_TO_MAT_DATE").param_value
 	fut_vol_tr = getParamEx2( a[3], a[7], "BIDDEPTHT").param_value
-	fut_vol_rec = fut_vol_tr * FutLot
-	fut_vol_rec_1 = Q_sec / fut_vol_rec * 100
+	fut_vol_rec = lag1 * FutLot
+	fut_vol_rec_1 = math.round( fut_vol_rec / Q_sec * 100, 2 )
 	--STARTTIME
 	-- futTIME 
 	--VOLTODAY
@@ -73,30 +74,71 @@ z = getNumberOf("depo_limits")
 	
 	
 
--- Данные хеджируемой акции
+	-- Данные хеджируемой акции
 	local request_result_sec_price = ParamRequest( a[4], a[5], "LAST")
 	sec_price =getParamEx2( a[4], a[5], "LAST").param_value
 	
--- расчёт контанго/бэквордации
+	-- расчёт контанго/бэквордации
 	CONTANGO = (fut_price - sec_price * FutLot) / (sec_price * FutLot + go_buy) *365 / fut_life * 100
 	CONTANGO = math.round(CONTANGO, 2)
 
--- переменные по количеству хеджируемых бумаг	
+	-- переменные по количеству хеджируемых бумаг	
 	Q_sec_h = Q_sec
 	Q_sec_h_1 = math.round(Q_sec_h / Q_sec * 100, 2)
 	Q_fut_rec = math.round(Q_sec / FutLot, 0)
 
 	go_buy_2 = math.round(Q_sec_h / FutLot * go_buy_1, 1)
 	
-	message(    "request_result_depo_GO: " .. go_buy_2)
+	-- message(    "request_result_depo_GO: " .. fut_vol_tr)
 	--.. ";\n" ..
     --"request_result_depo_price: " .. fut_vol_rec .. ";\n" ..
 	--"life: " .. fut_vol_rec_1.. ";\n" ..
 	--"Q_sec:  ".. Q_sec
 	--)
-	end
+
+
 	
-	function vuBildTable()
+	
+end
+
+-- Обзор стакана фьючерса по стороне "покупка" для определения глубины с максимальной просадкой 0,15% от лучшей цены
+function OnQuote(class, sec ) 
+	if class == a[3] and sec == a[7] then
+	z = getQuoteLevel2 (class, sec)
+    z1 = z.bid_count
+    z3 = 0
+    z4 = 0
+    z6 = 0
+    lag = 0
+    lag1 = 0
+
+		for i=z1, 1, -1 do
+			if z.bid[i].quantity ~= nil then
+				lag = lag + tonumber(z.bid[i].quantity)
+                z3 = tonumber(z.bid[i].price)
+                z4 = tonumber(z.bid[z.bid_count+0].price)
+                z5 = (z4-z3) / z4 * 100
+				if z5 > 0.15 and z6 == 0 then
+                    z6 = i
+                    lag1 = lag
+				    --z4 = tonumber(z.bid[z.bid_count+0].price) - так для половинке стакана  Покупки
+				    --message("Full close :  " .. z3 .. " prosadka po cene - ".. ( tonumber(z3-z4)))
+				end
+			end
+			
+								--let = let .. "N-"..i.."  - price - ".. (z.bid[i].price)..";  "..(z.bid[i].quantity).." % ".. math.round(z5, 2) .."\n"
+		end
+								-- message (let)
+    							--message(let .. "Full close :  " .. z6 .. " ob'em predlozh - ".. lag1 .. " - v % - " .. z5)
+								
+	end
+	fut_vol_rec = lag1 * FutLot
+	fut_vol_rec_1 = math.round( fut_vol_rec / Q_sec * 100, 2 )
+	SetCell(t_id, 5 , 2 ,tostring(fut_vol_rec))
+	SetCell(t_id, 5 , 3 ,tostring(fut_vol_rec_1))
+end
+	
+function vuBildTable()
 
 	-- образ таблицы как бы
 	t_dat = {	{"Hedging a long stock position", a[4], "class code"},
@@ -106,7 +148,7 @@ z = getNumberOf("depo_limits")
 				{"part recommended for hedge", tostring(fut_vol_rec), tostring(fut_vol_rec_1), " ","step/lot"},
 				{"your decision to hedge part", tostring(Q_sec_h), tostring(Q_sec_h_1), "< - >", tostring(FutLot), "< + >"},
 				{"contango/backwardation", tostring(CONTANGO), "% Y      "},
-				{"guarantee provision for 1 contract", tostring(go_buy_1) , tostring(go_bay_2)},
+				{"guarantee provision for 1 contract", tostring(go_buy_1) , tostring(go_buy_2)},
 				{"State"},
 				{"robot is OFF", "START"},
 				{"----"},
@@ -195,7 +237,9 @@ function OnTableEvent(t_id, msg, par1, par2)
 		if par1 == 6 -- Номер строки
 	    and par2 == 4 then -- Номер колонки
 		
-	       Q_sec_h = Q_sec_h - FutLot
+		   Q_sec_h = Q_sec_h - FutLot
+		   Q_sec_h_1 = math.round(Q_sec_h / Q_sec * 100, 2)
+		   go_buy_2 = math.round(Q_sec_h / FutLot * go_buy_1, 1)
 		   DestroyTable(t_id)
 		   vuBildTable()
 		end
@@ -203,7 +247,9 @@ function OnTableEvent(t_id, msg, par1, par2)
 		if par1 == 6 -- Номер строки
 	    and par2 == 6 then -- Номер колонки
 		
-	       Q_sec_h = Q_sec_h + FutLot
+		   Q_sec_h = Q_sec_h + FutLot
+		   Q_sec_h_1 = math.round(Q_sec_h / Q_sec * 100, 2)
+		   go_buy_2 = math.round(Q_sec_h / FutLot * go_buy_1, 1)
 		   DestroyTable(t_id)
 		   vuBildTable()
 		end
