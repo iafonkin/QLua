@@ -26,7 +26,7 @@ end
 local file, err = io.open(FPath, "r") -- Открыть файл для чтения
 if file then                               -- Проверить, что он открылся
 
-		for i=1,9 do
+		for i=1,10 do
 			a[i] = file:read()                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
 		
@@ -97,6 +97,10 @@ function GetData()
 	--)
 
 
+	-- текущие дата и врем
+	T_date = getInfoParam("TRADEDATE")
+	T_time = getInfoParam("LOCALTIME")
+
 	
 	
 end
@@ -118,7 +122,7 @@ function OnQuote(class, sec )
                 z3 = tonumber(z.bid[i].price)
                 z4 = tonumber(z.bid[z.bid_count+0].price)
                 z5 = (z4-z3) / z4 * 100
-				if z5 > 0.15 and z6 == 0 then
+				if z5 > tonumber( a[10] ) and z6 == 0 then
                     z6 = i
                     lag1 = lag
 				    --z4 = tonumber(z.bid[z.bid_count+0].price) - так для половинке стакана  Покупки
@@ -154,7 +158,7 @@ function vuBildTable()
 				{"----"},
 				{"Hedge"},
 				{"Open", "Date", "Time"},
-				{" ", "11.09.2020", "15:45"},
+				{" ", tostring(T_date), tostring(T_time)},
 				{" ", "security", "futures"},
 				{"quantity", 123, 456},
 				{"price", 526, 865},
