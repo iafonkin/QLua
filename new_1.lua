@@ -2,6 +2,7 @@
 is_run = true
 
 local FPath = getScriptPath().."/ini.txt"
+local LogPath = getScriptPath().."/log.txt"
 a ={}
 m = "Data : \n"
 z = 0
@@ -25,6 +26,7 @@ end
 function OnStop()
   is_run = false
   DestroyTable(t_id)
+  AddLog("Script close")
   return 1000
 end
 
@@ -273,16 +275,19 @@ function OnTableEvent(t_id, msg, par1, par2)
 						
 			if status == "OFF" then -- если Статус = Выкл, то Статус = Вкл . Т.е включается скрипт отслеживания необходимости открытия хеджа
 				status = "ON"
+				AddLog ("new status = ".. status)
 				SetCell (t_id, 10, 1, "robot is ON")
 				SetCell (t_id, 10, 2, "STOP")
 
 			elseif status == "ON" then -- если Статус = Вкл, то Статус = Выкл . Т.е. останавливантся скрипт льслеживания
 				status = "OFF"
+				AddLog ("new status = ".. status)
 				SetCell (t_id, 10, 1, "robot is OFF")
 				SetCell (t_id, 10, 2, "START")
 
 			elseif status == "HEDGE" then -- если Статус = Хедж, то Статус = ВЫкл . принудительное закрытие Хеджа
 				status = "OFF"
+				AddLog ("new status = ".. status)
 				SetCell (t_id, 10, 1, "robot is OFF")
 				SetCell (t_id, 10, 2, "START")
 			end
@@ -307,7 +312,7 @@ function momentum()
 
 	end
 
-	message("momentum - " .. res)
+	--message("momentum - " .. res)
 
 	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
 		
@@ -321,6 +326,7 @@ function momentum()
 		place_label(ds:C(now_candle), date_pos, time_pos)
 
 		message(ds:C(now_candle).. " = " .. date_pos .. " = " .. time_pos)
+
 
 
 	end
@@ -384,12 +390,19 @@ function place_label(price, date_pos, time_pos)
 	label_id = AddLabel("RusHidro", label_params)
 end
 
+function AddLog(log_txt)
+	local l = io.open(LogPath, 'a')   
+    arg = tostring( os.date() .. " --- ".. log_txt)
+	l:write(arg .. '\n') 
+	l:flush() 
 
+ 	l:close()
+end
 
 
 --Основное тело скрипта
 function main()
-
+AddLog("Script open")
 GetData()
 vuBildTable()
 	 while is_run do

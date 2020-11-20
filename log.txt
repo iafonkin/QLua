@@ -1,0 +1,6 @@
+Fri Nov 20 17:28:11 2020new status = ON
+Fri Nov 20 17:28:14 2020new status = OFF
+Fri Nov 20 17:34:42 2020 --- Script open
+Fri Nov 20 17:34:47 2020 --- new status = ON
+Fri Nov 20 17:34:52 2020 --- new status = OFF
+Fri Nov 20 17:34:58 2020 --- Script close
