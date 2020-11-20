@@ -9,6 +9,11 @@ gi = ""
 Q_sec = 0 -- колво общая позиция хеджирукемой бумаги
 t_dat = {{}}
 lag1 = 1
+--переменные для МОМЕНТУМ
+period = 200
+res = 100
+now_candle = 0
+
 
 -- округдение до нужного после запятой
 math.round = function(num, idp)
@@ -26,11 +31,12 @@ end
 local file, err = io.open(FPath, "r") -- Открыть файл для чтения
 if file then                               -- Проверить, что он открылся
 
-		for i=1,10 do
+		for i=1,11 do
 			a[i] = file:read()                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
 		
 		file:close()                           -- Закрыть файл
+		status = a[11]
 else
     message (err, 2)             -- Если не открылся, то вывести ошибку
     is_run = false
@@ -227,6 +233,8 @@ function vuBildTable()
 	SetColor(t_id, 6, 4, RGB(255, 0, 0), RGB(0, 0, 0), RGB(255, 0, 0), RGB(0, 0, 0))
 	SetColor(t_id, 6, 5, RGB(224, 255, 224), RGB(0, 0, 0), RGB(224, 255, 224), RGB(0, 0, 0))
 	SetColor(t_id, 6, 6, RGB(0, 255, 0), RGB(0, 0, 0), RGB(0, 255, 0), RGB(0, 0, 0))
+
+	SetColor(t_id, 10, 2, RGB(180, 180, 255), RGB(0, 0, 0), RGB(180, 180, 255), RGB(0, 0, 0))
 	
 	
 	
@@ -235,17 +243,18 @@ end
 -- Функция обрабатывает события в таблице
 function OnTableEvent(t_id, msg, par1, par2)
     -- Если был клик левой кнопкой
-	-- message("msg= "..msg.." par1="..par1.." par2="..par2)
+	 -- message("msg= "..msg.." par1="..par1.." par2="..par2.. "status="..status)
     if msg == 11 then
-        -- Если это общий стоп
+        
 		if par1 == 6 -- Номер строки
 	    and par2 == 4 then -- Номер колонки
 		
 		   Q_sec_h = Q_sec_h - FutLot
 		   Q_sec_h_1 = math.round(Q_sec_h / Q_sec * 100, 2)
 		   go_buy_2 = math.round(Q_sec_h / FutLot * go_buy_1, 1)
-		   DestroyTable(t_id)
-		   vuBildTable()
+		   SetCell (t_id, 6, 2, tostring(Q_sec_h))
+		   SetCell (t_id, 6, 3, tostring(Q_sec_h_1))
+		   SetCell (t_id, 8, 3, tostring(go_buy_2))
 		end
 		
 		if par1 == 6 -- Номер строки
@@ -254,11 +263,128 @@ function OnTableEvent(t_id, msg, par1, par2)
 		   Q_sec_h = Q_sec_h + FutLot
 		   Q_sec_h_1 = math.round(Q_sec_h / Q_sec * 100, 2)
 		   go_buy_2 = math.round(Q_sec_h / FutLot * go_buy_1, 1)
-		   DestroyTable(t_id)
-		   vuBildTable()
+		   SetCell (t_id, 6, 2, tostring(Q_sec_h))
+		   SetCell (t_id, 6, 3, tostring(Q_sec_h_1))
+		   SetCell (t_id, 8, 3, tostring(go_buy_2))
 		end
+
+		if par1 == 10 -- Номер строки
+		and par2 == 2 then -- Номер колонки
+						
+			if status == "OFF" then -- если Статус = Выкл, то Статус = Вкл . Т.е включается скрипт отслеживания необходимости открытия хеджа
+				status = "ON"
+				SetCell (t_id, 10, 1, "robot is ON")
+				SetCell (t_id, 10, 2, "STOP")
+
+			elseif status == "ON" then -- если Статус = Вкл, то Статус = Выкл . Т.е. останавливантся скрипт льслеживания
+				status = "OFF"
+				SetCell (t_id, 10, 1, "robot is OFF")
+				SetCell (t_id, 10, 2, "START")
+
+			elseif status == "HEDGE" then -- если Статус = Хедж, то Статус = ВЫкл . принудительное закрытие Хеджа
+				status = "OFF"
+				SetCell (t_id, 10, 1, "robot is OFF")
+				SetCell (t_id, 10, 2, "START")
+			end
+		
+		end
+		
+
+
 	end	
 end
+
+
+-- ЛОГИКА ОТСЛЕЖИВАНИЯ НА ОСНОВЕ ИНДИКАТОРА МОМЕНТУМ
+function momentum()
+
+	dannye()
+        
+	if ds:Size() > period+2 then
+	res = ds:L(ds:Size()) / ds:L(ds:Size() - period) * 100
+	res1 = ds:L(ds:Size()-1) / ds:L(ds:Size() - period - 1) * 100
+	res2 = ds:L(ds:Size()-2) / ds:L(ds:Size() - period - 2) * 100
+
+	end
+
+	message("momentum - " .. res)
+
+	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
+		
+		status = "HEDGE"
+		now_candle = ds:Size()
+		-- Представляем дату в виде "ГГГГММДД"
+		local date_pos = (tostring(ds:T(now_candle).year)..add_zero(tostring(ds:T(now_candle).month))..add_zero(tostring(ds:T(now_candle).day)))
+		-- Представляем время в виде "ЧЧММСС"
+		local time_pos = (add_zero(tostring(ds:T(now_candle).hour))..add_zero(tostring(ds:T(now_candle).min))..add_zero(tostring(ds:T(now_candle).sec)))
+		-- Вызываем размещение метки с полученной датой и временем
+		place_label(ds:C(now_candle), date_pos, time_pos)
+
+		message(ds:C(now_candle).. " = " .. date_pos .. " = " .. time_pos)
+
+
+	end
+
+end
+
+-- вспомогательная функция для МОМЕНТУМ
+function dannye() 
+    ds, err = CreateDataSource (a[4], a[5], INTERVAL_H1)
+    ds:SetEmptyCallback()
+    sleep(100)
+    while (err == "" or err == nil) and ds:Size() == 0 do sleep(1) end
+    if err ~= "" and err ~= nil then message("Ошибка подключения к графику: "..err) end
+    now_candle = ds:Size()
+end
+
+-- вспомогательная функция для МОМЕНТУМ
+-- Функция добавляет 0 к переданному значению, если количество переданных символов = 1, "1" -> "01"
+function add_zero(number_str)
+	if #number_str == 1 then
+		return "0"..number_str
+	else
+		return number_str
+	end
+end
+
+-- вспомогательная функция для МОМЕНТУМ
+function place_label(price, date_pos, time_pos)
+	-- Внимание, название всех параметров должны писаться большими буквами
+	label_params = {
+		-- Если подпись не требуется то оставить строку пустой ""
+		TEXT = "Open Hedge",
+		-- Если картинка не требуется оставить значение пустым ""
+		IMAGE_PATH = getScriptPath() .. "\\arrow.jpeg",
+		-- Расположение картинки относительно текста (возможно 4 варианта: LEFT, RIGHT, TOP, BOTTOM)
+		ALIGNMENT = "LEFT",
+		-- Значение параметра на оси Y, к которому будет привязана метка
+		YVALUE = price,
+		-- Дата в формате «ГГГГММДД», к которой привязана метка
+		DATE = date_pos,
+		-- Время в формате «ЧЧММСС», к которому будет привязана метка
+		TIME = time_pos,
+		-- Красная компонента цвета в формате RGB. Число в интервале [0;255]
+		R = 100,
+		-- Зеленая компонента цвета в формате RGB. Число в интервале [0;255]
+		G = 200,
+		-- Синяя компонента цвета в формате RGB. Число в интервале [0;255]
+		B = 80,
+		-- Прозрачность метки в процентах. Значение должно быть в промежутке [0; 100]
+		TRANSPARENCY = 10,
+		-- Прозрачность фона картинки. Возможные значения: «0» – прозрачность отключена, «1» – прозрачность включена
+		TRANSPARENT_BACKGROUND = 1,
+		-- Название шрифта (например «Arial»)
+		FONT_FACE_NAME = "Arial",
+		-- Размер шрифта
+		FONT_HEIGHT = 12,
+		-- Текст всплывающей подсказки
+		HINT = "This moment hedge is Open"
+	}
+	-- Добавляем метку и запоминаем ее ID
+	label_id = AddLabel("RusHidro", label_params)
+end
+
+
 
 
 --Основное тело скрипта
@@ -269,7 +395,7 @@ vuBildTable()
 	 while is_run do
 -- vuIniData()
 
-
+		momentum()
 
         
 	sleep(10000)
