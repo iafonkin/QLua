@@ -11,3 +11,44 @@ Tue Nov 24 14:41:19 2020 --- Script open
 Tue Nov 24 14:41:23 2020 --- new status = OFF
 Tue Nov 24 14:41:27 2020 --- new status = ON
 Tue Nov 24 14:41:32 2020 --- Script close
+Tue Nov 24 16:03:16 2020 --- Script open
+Tue Nov 24 16:03:40 2020 --- Script close
+Tue Nov 24 17:23:52 2020 --- Script open
+Tue Nov 24 17:25:01 2020 --- new status = ON
+Tue Nov 24 17:25:03 2020 --- new status = HEDGE
+Tue Nov 24 17:25:59 2020 --- new status = OFF
+Tue Nov 24 17:27:39 2020 --- Script close
+Tue Nov 24 17:28:10 2020 --- Script open
+Tue Nov 24 17:29:14 2020 --- new status = ON
+Tue Nov 24 17:29:21 2020 --- new status = HEDGE
+Tue Nov 24 17:29:21 2020 --- Order #2502442 to sell 2.0 futures by price: table: 0000018E78BE4D20 send
+Tue Nov 24 17:29:21 2020 --- Hedging by selling futures has failed. ERROR:  Указанный инструмент не найден: "HYDR"
+Tue Nov 24 17:29:31 2020 --- new status = OFF
+Tue Nov 24 17:31:31 2020 --- Script close
+Tue Nov 24 17:33:06 2020 --- Script open
+Tue Nov 24 17:34:06 2020 --- new status = ON
+Tue Nov 24 17:34:06 2020 --- new status = HEDGE
+Tue Nov 24 17:34:06 2020 --- Order #2502442 to sell 2.0 futures by price: table: 0000018E78F557A0 send
+Tue Nov 24 17:34:06 2020 --- Hedging by selling futures has failed. ERROR:  Неправильно указана цена: "table: 0000018E78F557A0"
+Сообщение об ошибке: Недопустимый символ
+Tue Nov 24 17:34:24 2020 --- new status = OFF
+Tue Nov 24 17:37:06 2020 --- Script close
+Tue Nov 24 17:37:29 2020 --- Script open
+Tue Nov 24 17:41:18 2020 --- Script open
+Tue Nov 24 17:41:33 2020 --- Script close
+Tue Nov 24 17:42:41 2020 --- Script open
+Tue Nov 24 17:43:16 2020 --- Script open
+Tue Nov 24 17:44:54 2020 --- Script open
+Tue Nov 24 17:45:56 2020 --- new status = ON
+Tue Nov 24 17:46:04 2020 --- new status = HEDGE
+Tue Nov 24 17:46:04 2020 --- Order #2502442 to sell 2.0 futures by price: table: 0000018E7985EA60 send
+Tue Nov 24 17:46:04 2020 --- Hedging by selling futures has failed. ERROR:  Неправильно указано количество: "2.0"
+Сообщение об ошибке: Число не может содержать знак разделителя дробной части
+Tue Nov 24 17:46:46 2020 --- Script close
+Tue Nov 24 18:19:12 2020 --- Script open
+Tue Nov 24 18:20:00 2020 --- new status = OFF
+Tue Nov 24 18:20:21 2020 --- new status = ON
+Tue Nov 24 18:20:22 2020 --- new status = HEDGE
+Tue Nov 24 18:20:22 2020 --- Order #2502442 to sell 2.0 futures by price: table: 0000018E5EFFC800 send
+Tue Nov 24 18:22:08 2020 --- new status = OFF
+Tue Nov 24 18:22:17 2020 --- Script close

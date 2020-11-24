@@ -27,7 +27,12 @@ function OnStop()
   is_run = false
   DestroyTable(t_id)
   AddLog("Script close")
+  	--if order.balance ~= nil and order.balance ~= 0 then
+	--	AddLog("QUIK is stop, but we have Order unexecute to " .. tostring(order.balance) .. "contract !!!")
+	--	message("QUIK is stop, but we have Order unexecute to " .. tostring(order.balance) .. "contract !!!")
+ 	--end
 
+  -- Перезапишим с новыми данными файл ini.txt
   local file, err = io.open(FPath, "w") -- Открыть файл для чтения
 	if file then                               -- Проверить, что он открылся
 
@@ -329,6 +334,7 @@ function momentum()
 	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
 		
 		status = "HEDGE"
+		AddLog ("new status = ".. status)
 		now_candle = ds:Size()
 		-- Представляем дату в виде "ГГГГММДД"
 		local date_pos = (tostring(ds:T(now_candle).year)..add_zero(tostring(ds:T(now_candle).month))..add_zero(tostring(ds:T(now_candle).day)))
@@ -338,6 +344,8 @@ function momentum()
 		place_label(ds:C(now_candle), date_pos, time_pos)
 
 		message(ds:C(now_candle).. " = " .. date_pos .. " = " .. time_pos)
+
+		OpenPosition()
 
 
 
@@ -411,6 +419,48 @@ function AddLog(log_txt)
  	l:close()
 end
 
+function OpenPosition()
+
+	trans_id = math.random(1, 2000000000)
+	pos_quantity = tostring(math.round(Q_sec_h / FutLot , 0))
+	
+	local Transaction={
+		["TRANS_ID"]   = tostring(trans_id),
+		["ACTION"]     = "NEW_ORDER",
+		["CLASSCODE"]  = a[3],
+		["SECCODE"]    = a[7],
+		["OPERATION"]  = "S", -- (SELL)
+		["TYPE"]       = "M", -- по рынку (MARKET)
+		["QUANTITY"]   = tostring(pos_quantity:sub(1, string.len(pos_quantity) - 2)), -- количество
+		["ACCOUNT"]    = a[1],
+		["PRICE"]      = tostring(z.bid[z6].price),
+		["COMMENT"]    = "hedge"
+	 }
+
+	local Result = sendTransaction(Transaction)
+   	AddLog("Order #"..tostring(trans_id) .. " to sell " .. tostring(pos_quantity) ..  " futures by price: " .. tostring(z.bid[z6]) .. " send") -- Записывает в лог-файл
+   
+   -- ЕСЛИ функция вернула строку диагностики ошибки, ТО значит транзакция не прошла
+    if Result ~= "" then
+      -- Выводит сообщение с ошибкой
+	  message("Hedging by selling futures has failed\nERROR: "..Result)
+	  AddLog("Hedging by selling futures has failed. ERROR: "..Result)
+      -- Завершает выполнение функции
+      return(0)
+   	end   
+end
+
+function OnOrder(order)
+
+	if order.trans_id == trans_id and order.balance == 0 then
+		a[9] = pos_quantity
+		a[8] = Q_sec_h
+		AddLog("Order #" .. tostring(trans_id) .. " full execute")
+
+	end	
+
+end
+
 
 --Основное тело скрипта
 function main()
@@ -421,7 +471,7 @@ vuBildTable()
 -- vuIniData()
 
 		momentum()
-
+ --message(tostring(z.bid[z6].price))
         
 	sleep(10000)
     end
