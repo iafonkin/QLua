@@ -27,6 +27,18 @@ function OnStop()
   is_run = false
   DestroyTable(t_id)
   AddLog("Script close")
+
+  local file, err = io.open(FPath, "w") -- Открыть файл для чтения
+	if file then                               -- Проверить, что он открылся
+
+		a[11] = status
+		for i=1,11 do
+			file:write(a[i] .. '\n')                        -- Прочитать первую строку в переменную x (без преобразования в число)
+		end
+		file:flush()
+		file:close()                           -- Закрыть файл
+	end
+
   return 1000
 end
 
