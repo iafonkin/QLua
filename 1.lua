@@ -17,3 +17,17 @@ r = tostring(pos_quantity:sub(1, string.len(pos_quantity) - 2))
 message ( g .."   " .. pos_quantity.. " ----- " .. r)
 
 
+RANDOM_SEED = tonumber(os.date("%Y%m%d%H%M%S"))
+
+function random_max()
+	-- не принимает параметры и возвращает от 0 до 2147483647 (макс. полож. 32 битное число) подходит нам для транзакций
+	local res = (16807*(RANDOM_SEED or 137137))%2147483647
+	RANDOM_SEED = res
+	return res
+end
+
+zx = random_max()
+
+message(tostring(zx))
+
+

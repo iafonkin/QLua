@@ -14,6 +14,15 @@ lag1 = 1
 period = 200
 res = 100
 now_candle = 0
+RANDOM_SEED = tonumber(os.date("%Y%m%d%H%M%S")) -- для рандомной нумерации
+
+
+function random_max()
+	-- не принимает параметры и возвращает от 0 до 2147483647 (макс. полож. 32 битное число) подходит нам для транзакций
+	local res = (16807*(RANDOM_SEED or 137137))%2147483647
+	RANDOM_SEED = res
+	return res
+end
 
 
 -- округдение до нужного после запятой
@@ -421,7 +430,7 @@ end
 
 function OpenPosition()
 
-	trans_id = math.random(1, 2000000000)
+	trans_id = random_max()
 	pos_quantity = tostring(math.round(Q_sec_h / FutLot , 0))
 	
 	local Transaction={
@@ -438,7 +447,7 @@ function OpenPosition()
 	 }
 
 	local Result = sendTransaction(Transaction)
-   	AddLog("Order #"..tostring(trans_id) .. " to sell " .. tostring(pos_quantity) ..  " futures by price: " .. tostring(z.bid[z6]) .. " send") -- Записывает в лог-файл
+   	AddLog("Order #"..tostring(trans_id) .. " to sell " .. tostring(pos_quantity) ..  " futures by price: " .. tostring(z.bid[z6].price) .. " send") -- Записывает в лог-файл
    
    -- ЕСЛИ функция вернула строку диагностики ошибки, ТО значит транзакция не прошла
     if Result ~= "" then
