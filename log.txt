@@ -52,3 +52,17 @@ Tue Nov 24 18:20:22 2020 --- new status = HEDGE
 Tue Nov 24 18:20:22 2020 --- Order #2502442 to sell 2.0 futures by price: table: 0000018E5EFFC800 send
 Tue Nov 24 18:22:08 2020 --- new status = OFF
 Tue Nov 24 18:22:17 2020 --- Script close
+Wed Dec  2 14:44:08 2020 --- Script open
+Wed Dec  2 14:45:08 2020 --- new status = ON
+Wed Dec  2 14:45:09 2020 --- new status = HEDGE
+Wed Dec  2 14:45:09 2020 --- Order #1001666907 to sell 2.0 futures by price: 7756 send
+Wed Dec  2 14:45:09 2020 --- Order #1001666907 full execute
+Wed Dec  2 14:45:14 2020 --- new status = OFF
+Wed Dec  2 14:45:55 2020 --- Script close
+Wed Dec  2 14:48:00 2020 --- Script open
+Wed Dec  2 14:48:00 2020 --- new status = ON
+Wed Dec  2 14:51:41 2020 --- Script open
+Wed Dec  2 14:51:41 2020 --- new status = ON
+Wed Dec  2 14:51:41 2020 --- Order #1013986438 to Buy 2.0 futures by price: 7842 send
+Wed Dec  2 14:51:41 2020 --- Order #1013986438 full execute
+Wed Dec  2 14:52:04 2020 --- Script close

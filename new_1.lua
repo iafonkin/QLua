@@ -340,7 +340,7 @@ function momentum()
 
 	--message("momentum - " .. res)
 
-	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
+	if status == "ON" and res < 100 and res1 >= 100 and res2 >=100 then
 		
 		status = "HEDGE"
 		AddLog ("new status = ".. status)
@@ -350,7 +350,7 @@ function momentum()
 		-- Представляем время в виде "ЧЧММСС"
 		local time_pos = (add_zero(tostring(ds:T(now_candle).hour))..add_zero(tostring(ds:T(now_candle).min))..add_zero(tostring(ds:T(now_candle).sec)))
 		-- Вызываем размещение метки с полученной датой и временем
-		place_label(ds:C(now_candle), date_pos, time_pos)
+		place_label(ds:C(now_candle), date_pos, time_pos, "Open Hedge")
 
 		message(ds:C(now_candle).. " = " .. date_pos .. " = " .. time_pos)
 
@@ -359,6 +359,26 @@ function momentum()
 
 
 	end
+
+	if status == "HEDGE" and res > 103 and res1 <= 103 and res2 <=103 then
+		status = "ON"
+		AddLog ("new status = ".. status)
+		now_candle = ds:Size()
+		-- Представляем дату в виде "ГГГГММДД"
+		local date_pos = (tostring(ds:T(now_candle).year)..add_zero(tostring(ds:T(now_candle).month))..add_zero(tostring(ds:T(now_candle).day)))
+		-- Представляем время в виде "ЧЧММСС"
+		local time_pos = (add_zero(tostring(ds:T(now_candle).hour))..add_zero(tostring(ds:T(now_candle).min))..add_zero(tostring(ds:T(now_candle).sec)))
+		-- Вызываем размещение метки с полученной датой и временем
+		place_label(ds:C(now_candle), date_pos, time_pos, "Close Hedge")
+
+		message(ds:C(now_candle).. " = " .. date_pos .. " = " .. time_pos)
+
+		ClosePosition()
+	
+	
+	end
+
+
 
 end
 
@@ -383,11 +403,11 @@ function add_zero(number_str)
 end
 
 -- вспомогательная функция для МОМЕНТУМ
-function place_label(price, date_pos, time_pos)
+function place_label(price, date_pos, time_pos, tekst)
 	-- Внимание, название всех параметров должны писаться большими буквами
 	label_params = {
 		-- Если подпись не требуется то оставить строку пустой ""
-		TEXT = "Open Hedge",
+		TEXT = tekst,
 		-- Если картинка не требуется оставить значение пустым ""
 		IMAGE_PATH = getScriptPath() .. "\\arrow.jpeg",
 		-- Расположение картинки относительно текста (возможно 4 варианта: LEFT, RIGHT, TOP, BOTTOM)
@@ -454,6 +474,41 @@ function OpenPosition()
       -- Выводит сообщение с ошибкой
 	  message("Hedging by selling futures has failed\nERROR: "..Result)
 	  AddLog("Hedging by selling futures has failed. ERROR: "..Result)
+	else a[9] = tonumber(pos_quantity)
+      -- Завершает выполнение функции
+      return(0)
+   	end   
+end
+
+function ClosePosition()
+
+	trans_id = random_max()
+	pos_quantity = tostring(math.round(a[9], 0))
+	fut_price = getParamEx2( a[3], a[7], "LAST").param_value
+	fut_price = tostring(math.round(fut_price * 1.01, 0))
+	
+	local Transaction={
+		["TRANS_ID"]   = tostring(trans_id),
+		["ACTION"]     = "NEW_ORDER",
+		["CLASSCODE"]  = a[3],
+		["SECCODE"]    = a[7],
+		["OPERATION"]  = "B", -- (Buy)
+		["TYPE"]       = "M", -- по рынку (MARKET)
+		["QUANTITY"]   = tostring(pos_quantity:sub(1, string.len(pos_quantity) - 2)), -- количество, -- количество
+		["ACCOUNT"]    = a[1],
+		["PRICE"]      = tostring(fut_price:sub(1, string.len(fut_price) - 2)),
+		["COMMENT"]    = "stop hedge"
+	 }
+message (tostring(fut_price:sub(1, string.len(pos_quantity) - 2)))
+	local Result = sendTransaction(Transaction)
+   	AddLog("Order #"..tostring(trans_id) .. " to Buy " .. tostring(pos_quantity) ..  " futures by price: " .. tostring(fut_price:sub(1, string.len(fut_price) - 2)) .. " send") -- Записывает в лог-файл
+   
+   -- ЕСЛИ функция вернула строку диагностики ошибки, ТО значит транзакция не прошла
+    if Result ~= "" then
+      -- Выводит сообщение с ошибкой
+	  message("Stop Hedging by Buying futures has failed\nERROR: "..Result)
+	  AddLog("Stop Hedging by Buying futures has failed. ERROR: "..Result)
+	  else a[9] = 0
       -- Завершает выполнение функции
       return(0)
    	end   
