@@ -390,7 +390,7 @@ function momentum()
 
 	end
 
-	if status == "HEDGE" and res > 100 and res1 <= 103 and res2 <=103 then
+	if status == "HEDGE" and res > 103 and res1 <= 103 and res2 <=103 then
 		status = "ON"
 		AddLog ("new status = ".. status)
 		SetCell (t_id, 10, 1, "robot is ON")
@@ -513,7 +513,7 @@ function OpenPosition()
 end
 
 function ClosePosition()
-	message("a9 = - " .. tostring(FUT_POS))
+	
 	trans_id = random_max()
 	pos_quantity = tostring(math.round(FUT_POS+0, 0))
 	fut_price = getParamEx2( a[3], a[7], "LAST").param_value
