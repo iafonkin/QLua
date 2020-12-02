@@ -1,5 +1,10 @@
+-- dofile (getScriptPath().."\\monitorStepNRTR.lua") --ste
+
 -- Объявляем переменные
 is_run = true
+
+FUT_POS = 0
+SEC_POS = 0
 
 local FPath = getScriptPath().."/ini.txt"
 local LogPath = getScriptPath().."/log.txt"
@@ -46,6 +51,8 @@ function OnStop()
 	if file then                               -- Проверить, что он открылся
 
 		a[11] = status
+		a[9] = FUT_POS
+		a[8] = SEC_POS
 		for i=1,11 do
 			file:write(a[i] .. '\n')                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
@@ -65,6 +72,8 @@ if file then                               -- Проверить, что он о
 		
 		file:close()                           -- Закрыть файл
 		status = a[11]
+		FUT_POS = a[9]
+		SEC_POS = a[8]
 else
     message (err, 2)             -- Если не открылся, то вывести ошибку
     is_run = false
@@ -177,6 +186,14 @@ function OnQuote(class, sec )
 end
 	
 function vuBildTable()
+	if a[11] == "ON" then
+		state1, state2 = "robot is ON", "STOP"
+		elseif a[11] == "OFF" then
+			state1, state2 = "robot is OFF", "START"
+			else
+				state1, state2 = "robot is HEDGE", "STOP"
+		
+	end
 
 	-- образ таблицы как бы
 	t_dat = {	{"Hedging a long stock position", a[4], "class code"},
@@ -188,7 +205,7 @@ function vuBildTable()
 				{"contango/backwardation", tostring(CONTANGO), "% Y      "},
 				{"guarantee provision for 1 contract", tostring(go_buy_1) , tostring(go_buy_2)},
 				{"State"},
-				{"robot is OFF", "START"},
+				{state1, state2},
 				{"----"},
 				{"Hedge"},
 				{"Open", "Date", "Time"},
@@ -296,6 +313,18 @@ function OnTableEvent(t_id, msg, par1, par2)
 		   SetCell (t_id, 8, 3, tostring(go_buy_2))
 		end
 
+		if par1 == 5 -- Номер строки
+		and par2 == 2 then -- Номер колонки
+			
+			Q_sec_h = fut_vol_rec
+		   Q_sec_h_1 = math.round(Q_sec_h / Q_sec * 100, 2)
+		   go_buy_2 = math.round(Q_sec_h / FutLot * go_buy_1, 1)
+		   SetCell (t_id, 6, 2, tostring(Q_sec_h))
+		   SetCell (t_id, 6, 3, tostring(Q_sec_h_1))
+		   SetCell (t_id, 8, 3, tostring(go_buy_2))
+
+		end
+
 		if par1 == 10 -- Номер строки
 		and par2 == 2 then -- Номер колонки
 						
@@ -344,6 +373,7 @@ function momentum()
 		
 		status = "HEDGE"
 		AddLog ("new status = ".. status)
+		SetCell (t_id, 10, 1, "robot is HEDGE")
 		now_candle = ds:Size()
 		-- Представляем дату в виде "ГГГГММДД"
 		local date_pos = (tostring(ds:T(now_candle).year)..add_zero(tostring(ds:T(now_candle).month))..add_zero(tostring(ds:T(now_candle).day)))
@@ -360,9 +390,10 @@ function momentum()
 
 	end
 
-	if status == "HEDGE" and res > 103 and res1 <= 103 and res2 <=103 then
+	if status == "HEDGE" and res > 100 and res1 <= 103 and res2 <=103 then
 		status = "ON"
 		AddLog ("new status = ".. status)
+		SetCell (t_id, 10, 1, "robot is ON")
 		now_candle = ds:Size()
 		-- Представляем дату в виде "ГГГГММДД"
 		local date_pos = (tostring(ds:T(now_candle).year)..add_zero(tostring(ds:T(now_candle).month))..add_zero(tostring(ds:T(now_candle).day)))
@@ -452,6 +483,7 @@ function OpenPosition()
 
 	trans_id = random_max()
 	pos_quantity = tostring(math.round(Q_sec_h / FutLot , 0))
+	SEC_POS = Q_sec_h
 	
 	local Transaction={
 		["TRANS_ID"]   = tostring(trans_id),
@@ -474,16 +506,16 @@ function OpenPosition()
       -- Выводит сообщение с ошибкой
 	  message("Hedging by selling futures has failed\nERROR: "..Result)
 	  AddLog("Hedging by selling futures has failed. ERROR: "..Result)
-	else a[9] = tonumber(pos_quantity)
-      -- Завершает выполнение функции
-      return(0)
+	else
+		FUT_POS = pos_quantity
+			
    	end   
 end
 
 function ClosePosition()
-
+	message("a9 = - " .. tostring(FUT_POS))
 	trans_id = random_max()
-	pos_quantity = tostring(math.round(a[9], 0))
+	pos_quantity = tostring(math.round(FUT_POS+0, 0))
 	fut_price = getParamEx2( a[3], a[7], "LAST").param_value
 	fut_price = tostring(math.round(fut_price * 1.01, 0))
 	
@@ -499,7 +531,7 @@ function ClosePosition()
 		["PRICE"]      = tostring(fut_price:sub(1, string.len(fut_price) - 2)),
 		["COMMENT"]    = "stop hedge"
 	 }
-message (tostring(fut_price:sub(1, string.len(pos_quantity) - 2)))
+
 	local Result = sendTransaction(Transaction)
    	AddLog("Order #"..tostring(trans_id) .. " to Buy " .. tostring(pos_quantity) ..  " futures by price: " .. tostring(fut_price:sub(1, string.len(fut_price) - 2)) .. " send") -- Записывает в лог-файл
    
@@ -508,19 +540,26 @@ message (tostring(fut_price:sub(1, string.len(pos_quantity) - 2)))
       -- Выводит сообщение с ошибкой
 	  message("Stop Hedging by Buying futures has failed\nERROR: "..Result)
 	  AddLog("Stop Hedging by Buying futures has failed. ERROR: "..Result)
-	  else a[9] = 0
-      -- Завершает выполнение функции
-      return(0)
+	  else 
+		
+		FUT_POS = 0
+		SEC_POS = 0
+      
    	end   
 end
 
 function OnOrder(order)
 
 	if order.trans_id == trans_id and order.balance == 0 then
-		a[9] = pos_quantity
-		a[8] = Q_sec_h
+		if bit.test(order.flags, 2) then
+			a[8] = 0
+			a[9] = 0
+			else
+				a[9] = pos_quantity
+				a[8] = Q_sec_h
+		end
 		AddLog("Order #" .. tostring(trans_id) .. " full execute")
-
+		message("bit - " .. tostring(bit.test(order.flags, 2)))
 	end	
 
 end
@@ -532,10 +571,10 @@ AddLog("Script open")
 GetData()
 vuBildTable()
 	 while is_run do
--- vuIniData()
+
 
 		momentum()
- --message(tostring(z.bid[z6].price))
+ 
         
 	sleep(10000)
     end
