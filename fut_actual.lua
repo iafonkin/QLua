@@ -1,6 +1,6 @@
 -- спецификация кодов фьюч контрактов
   -- https://www.moex.com/s205
-functiom futActual(fut_name)  
+function futActual(fut_name)  
   --mask ="SR" -- список масок https://www.moex.com/a2087
   mask = fut_name:sub(1,2)
   m_mask ={ "F",   "G",   "H",   "J",   "K",   "M",  "N",   "Q",   "U",   "V",   "X",   "Z"  }
