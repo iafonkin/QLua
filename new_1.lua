@@ -20,6 +20,7 @@ period = 200
 res = 100
 now_candle = 0
 RANDOM_SEED = tonumber(os.date("%Y%m%d%H%M%S")) -- для рандомной нумерации
+new_fut_name = ""
 
 
 function random_max()
@@ -63,6 +64,63 @@ function OnStop()
   return 1000
 end
 
+function futActual(fut_name)  
+	--mask ="SR" -- список масок https://www.moex.com/a2087
+	mask = fut_name:sub(1,2)
+	m_mask ={ "F",   "G",   "H",   "J",   "K",   "M",  "N",   "Q",   "U",   "V",   "X",   "Z"  }
+	arg = ""
+	k = 0  
+	FUT = ""
+	cont ={{}}
+	z=""
+  
+	T_date = getInfoParam("TRADEDATE")
+	T_year = tostring(T_date:sub(string.len(T_date)))
+	T_next_Year = tostring(tonumber(T_date:sub(string.len(T_date)-3))+1)
+	T_next_Year = T_next_Year:sub(4)
+	T_month = tonumber(T_date:sub(4, 5))
+  
+	  year = {T_year, T_next_Year}
+	
+	  for a, v in ipairs(year) do
+  
+		  for i = 1, 12 do
+			  FUT = tostring(mask .. m_mask[i]..v)
+			  fut_life = getParamEx2( "SPBFUT", FUT, "DAYS_TO_MAT_DATE").param_value
+			  
+			  if tonumber(fut_life) > 0 then
+		  
+				  fut_vol_tr = getParamEx2( "SPBFUT", FUT, "MAT_DATE").param_value
+  
+					  if k == 0 then
+						  k = i
+						  Y = v
+					  end
+			  
+				  table.insert(cont, {FUT, fut_life, fut_vol_tr})
+			  end
+		  end
+	  end
+  
+   
+	  for i = 2, table.maxn(cont) do
+	  
+		  z = z .. tostring(cont[i][1]) .." -- " .. tostring(cont[i][2]) .. " -- " .. tostring(cont[i][3]).. '\n'
+	  
+	  end
+  
+						  --z = z .. "now: " .. tostring(cont[2][1]) .. " next: " ..  tostring(cont[3][1])
+						  -- message(z)
+  
+		  if tonumber(cont[2][2]) <= 11 then
+			  res = tostring(cont[3][1])
+		  else
+			  res = tostring(cont[2][1])
+		  end
+  
+	  return(res)
+end 
+
 local file, err = io.open(FPath, "r") -- Открыть файл для чтения
 if file then                               -- Проверить, что он открылся
 
@@ -74,6 +132,7 @@ if file then                               -- Проверить, что он о
 		status = a[11]
 		FUT_POS = a[9]
 		SEC_POS = a[8]
+		
 else
     message (err, 2)             -- Если не открылся, то вывести ошибку
     is_run = false
@@ -92,6 +151,22 @@ function GetData()
 			Q_sec = gi.currentbal
 			  
 		end
+	end
+
+
+	-- слежение за сменой актуальных фьючерсов
+	new_fut_name = futActual(a[7])
+	if new_fut_name ~= a[7] then
+	   
+		message ("Importent !!! \n" .. 
+		"There are 11 days left until the \n" .. 
+		"expiration of the futures.\n" ..
+		"The time has come to switch to \n" ..
+		" a new contract - " .. new_fut_name .. "\n" ..
+		"Modify the data in the ini.txt file. \n" ..
+		"And, if necessary, change the open \n" ..
+		"positions manually." )
+	
 	end
 
     FutInfo = getSecurityInfo(a[3], a[7]) -- запрос таблицы данных фьяча
@@ -574,6 +649,18 @@ vuBildTable()
 
 
 		momentum()
+
+		SetCell (t_id, 16, 2, tostring(a[8]))
+		SetCell (t_id, 16, 3, tostring(a[9]))
+		
+		fut_price = getParamEx2( a[3], a[7], "LAST").param_value
+		sec_price =getParamEx2( a[4], a[5], "LAST").param_value
+		SetCell (t_id, 17, 2, tostring(fut_price))
+		SetCell (t_id, 17, 3, tostring(sec_price))
+
+
+
+
  
         
 	sleep(10000)
