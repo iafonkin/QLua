@@ -54,7 +54,7 @@ function OnStop()
 		a[11] = status
 		a[9] = FUT_POS
 		a[8] = SEC_POS
-		for i=1,11 do
+		for i=1,13 do
 			file:write(a[i] .. '\n')                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
 		file:flush()
@@ -124,7 +124,7 @@ end
 local file, err = io.open(FPath, "r") -- Открыть файл для чтения
 if file then                               -- Проверить, что он открылся
 
-		for i=1,11 do
+		for i=1,13 do
 			a[i] = file:read()                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
 		
@@ -218,14 +218,15 @@ function GetData()
 	-- текущие дата и врем
 	T_date = getInfoParam("TRADEDATE")
 	T_time = getInfoParam("LOCALTIME")
-
+	--анализ стакана
+	stakan(a[3], a[7])
 	
 	
 end
 
--- Обзор стакана фьючерса по стороне "покупка" для определения глубины с максимальной просадкой 0,15% от лучшей цены
-function OnQuote(class, sec ) 
-	if class == a[3] and sec == a[7] then
+function stakan(class, sec)
+
+if class == a[3] and sec == a[7] then
 	z = getQuoteLevel2 (class, sec)
     z1 = z.bid_count
     z3 = 0
@@ -259,6 +260,11 @@ function OnQuote(class, sec )
 	SetCell(t_id, 5 , 2 ,tostring(fut_vol_rec))
 	SetCell(t_id, 5 , 3 ,tostring(fut_vol_rec_1))
 end
+
+-- Обзор стакана фьючерса по стороне "покупка" для определения глубины с максимальной просадкой 0,15% от лучшей цены
+function OnQuote(class, sec ) 
+	stakan(class, sec)
+end
 	
 function vuBildTable()
 	if a[11] == "ON" then
@@ -286,14 +292,14 @@ function vuBildTable()
 				{"Open", "Date", "Time"},
 				{" ", tostring(T_date), tostring(T_time)},
 				{" ", "security", "futures"},
-				{"quantity", 123, 456},
-				{"price", 526, 865},
-				{"sum", 12466, 46578},
+				{"quantity", tostring(FUT_POS * FutLot), tostring(FUT_POS)},
+				{"price", a[12], a[13]},
+				{"sum", tostring(FUT_POS * FutLot * a[12]), tostring(FUT_POS * a[13])},
 				{"----"},
 				{"actual quotes", 0.7, 7100},
 				{" ", 216563, 365415},
 				{"V", 45645, 55555},
-				{"actual result", " ", 77777777}
+				{"actual result", " ", (FUT_POS * FutLot * (a[12] - sec_price) - ( FUT_POS * (a[13] - fut_price ) )) }
 				
 				
 			}
@@ -655,8 +661,9 @@ vuBildTable()
 		
 		fut_price = getParamEx2( a[3], a[7], "LAST").param_value
 		sec_price =getParamEx2( a[4], a[5], "LAST").param_value
-		SetCell (t_id, 17, 2, tostring(fut_price))
-		SetCell (t_id, 17, 3, tostring(sec_price))
+		SetCell (t_id, 20, 3, tostring(fut_price))
+		SetCell (t_id, 20, 2, tostring(sec_price))
+		SetCell (t_id, 23, 3, tostring(FUT_POS * FutLot * (a[12] - sec_price) - ( FUT_POS * (a[13] - fut_price ) )) )
 
 
 
