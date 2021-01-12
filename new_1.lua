@@ -22,6 +22,10 @@ now_candle = 0
 RANDOM_SEED = tonumber(os.date("%Y%m%d%H%M%S")) -- для рандомной нумерации
 new_fut_name = ""
 
+avg_price = 0
+avg_price_sec = 0
+
+
 
 function random_max()
 	-- не принимает параметры и возвращает от 0 до 2147483647 (макс. полож. 32 битное число) подходит нам для транзакций
@@ -54,6 +58,8 @@ function OnStop()
 		a[11] = status
 		a[9] = FUT_POS
 		a[8] = SEC_POS
+		--a[12] = avg_price
+		--a[13] = avg_price_sec
 		for i=1,13 do
 			file:write(a[i] .. '\n')                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
@@ -293,13 +299,13 @@ function vuBildTable()
 				{" ", tostring(T_date), tostring(T_time)},
 				{" ", "security", "futures"},
 				{"quantity", tostring(FUT_POS * FutLot), tostring(FUT_POS)},
-				{"price", a[12], a[13]},
-				{"sum", tostring(FUT_POS * FutLot * a[12]), tostring(FUT_POS * a[13])},
+				{"price", a[13], a[12]},
+				{"sum", tostring(FUT_POS * FutLot * a[13]), tostring(FUT_POS * a[12])},
 				{"----"},
 				{"actual quotes", 0.7, 7100},
 				{" ", 216563, 365415},
 				{"V", 45645, 55555},
-				{"actual result", " ", (FUT_POS * FutLot * (a[12] - sec_price) - ( FUT_POS * (a[13] - fut_price ) )) }
+				{"actual result", " ", (FUT_POS * FutLot * (a[13] - sec_price) - ( FUT_POS * (a[12] - fut_price ) )) }
 				
 				
 			}
@@ -321,7 +327,7 @@ function vuBildTable()
 		-- Создает таблицу
 		t = CreateWindow(t_id)
 		-- Устанавливает заголовок	
-		SetWindowCaption(t_id, "First windows")
+		SetWindowCaption(t_id, "Manager Hedge")
 		-- Задает положение и размеры окна таблицы
 		SetWindowPos(t_id, 200, 200, 520, 450)
 		-- Добавляет строки
@@ -640,23 +646,25 @@ function OnOrder(order)
 			else
 				a[9] = pos_quantity
 				a[8] = Q_sec_h
-		end
-	-- вычисление руальной цены исполнения заявки
-			avg_price = 0
-			avg_qty = 0
-			avg_sum = 0
-			trt ={}	
-		for i=1, getNumberOf("trades")-1 do
-			trt = getItem("trades", i)
-			if trt.trans_id == trans_id then
-				avg_qty = avg_qty + trt.qty
-				avg_sum = avg_sum + (trt.qty * trt.qty)
-			end
+				-- вычисление руальной цены исполнения заявки
+					avg_price = 0
+					avg_qty = 0
+					avg_sum = 0
+					trt ={}	
+				for i=1, getNumberOf("trades")-1 do
+					trt = getItem("trades", i)
+					if trt.trans_id == trans_id then
+						avg_qty = avg_qty + trt.qty
+						avg_sum = avg_sum + (trt.qty * trt.qty)
+					end
+				
+				end
+						avg_price = avg_sum / avg_qty
+						avg_price_sec = getParamEx2( a[4], a[5], "LAST").param_value
+				-- окончание вычисления цены исполнения
 		
-		end
-				avg_price = avg_sum / avg_qty
-				avg_price_sec = getParamEx2( a[4], a[5], "LAST").param_value
-	-- окончание вычисления цены исполнения
+			end
+	
 
 		AddLog("Order #" .. tostring(trans_id) .. " full execute")
 		message("bit - " .. tostring(bit.test(order.flags, 2)))
@@ -683,7 +691,7 @@ vuBildTable()
 		sec_price =getParamEx2( a[4], a[5], "LAST").param_value
 		SetCell (t_id, 20, 3, tostring(fut_price))
 		SetCell (t_id, 20, 2, tostring(sec_price))
-		SetCell (t_id, 23, 3, tostring(FUT_POS * FutLot * (a[12] - sec_price) - ( FUT_POS * (a[13] - fut_price ) )) )
+		SetCell (t_id, 23, 3, tostring(FUT_POS * FutLot * (a[13] - sec_price) - ( FUT_POS * (a[12] - fut_price ) )) )
 
 
 
