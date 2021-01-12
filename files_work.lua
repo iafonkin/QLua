@@ -13,7 +13,7 @@ end
 function SaveData()
     local f = io.open(FPath, 'a')   
     
-          f:write(arg .. "Hedge ON"  '\n') 
+          f:write(arg .. "Hedge ON" .."\n")
           f:flush() 
     
        f:close()

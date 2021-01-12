@@ -277,8 +277,8 @@ function vuBildTable()
 	end
 
 	-- образ таблицы как бы
-	t_dat = {	{"Hedging a long stock position", a[4], "class code"},
-				{" ", a[5], "sec code"},
+	t_dat = {	{"Hedging a long stock position", a[4], "class code", " ", a[3]},
+				{" ", a[5], "sec code", " ", a[7]}, 
 				{" ", "quantity", " % "},
 				{"whole long stock position", tostring(Q_sec), " "},
 				{"part recommended for hedge", tostring(fut_vol_rec), tostring(fut_vol_rec_1), " ","step/lot"},
@@ -635,16 +635,36 @@ function OnOrder(order)
 		if bit.test(order.flags, 2) then
 			a[8] = 0
 			a[9] = 0
+			a[12] = 0
+			a[13] = 0
 			else
 				a[9] = pos_quantity
 				a[8] = Q_sec_h
 		end
+	-- вычисление руальной цены исполнения заявки
+			avg_price = 0
+			avg_qty = 0
+			avg_sum = 0
+			trt ={}	
+		for i=1, getNumberOf("trades")-1 do
+			trt = getItem("trades", i)
+			if trt.trans_id == trans_id then
+				avg_qty = avg_qty + trt.qty
+				avg_sum = avg_sum + (trt.qty * trt.qty)
+			end
+		
+		end
+				avg_price = avg_sum / avg_qty
+				avg_price_sec = getParamEx2( a[4], a[5], "LAST").param_value
+	-- окончание вычисления цены исполнения
+
 		AddLog("Order #" .. tostring(trans_id) .. " full execute")
 		message("bit - " .. tostring(bit.test(order.flags, 2)))
 	end	
 
 end
-
+	
+ 
 
 --Основное тело скрипта
 function main()
