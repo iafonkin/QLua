@@ -58,8 +58,8 @@ function OnStop()
 		a[11] = status
 		a[9] = FUT_POS
 		a[8] = SEC_POS
-		--a[12] = avg_price
-		--a[13] = avg_price_sec
+		a[12] = avg_price
+		a[13] = avg_price_sec
 		for i=1,13 do
 			file:write(a[i] .. '\n')                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
@@ -138,6 +138,8 @@ if file then                               -- Проверить, что он о
 		status = a[11]
 		FUT_POS = a[9]
 		SEC_POS = a[8]
+		avg_price = a[12]
+		avg_price_sec = a[13]
 		
 else
     message (err, 2)             -- Если не открылся, то вывести ошибку
@@ -456,7 +458,7 @@ function momentum()
 
 	--message("momentum - " .. res)
 
-	if status == "ON" and res < 100 and res1 >= 100 and res2 >=100 then
+	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
 		
 		status = "HEDGE"
 		AddLog ("new status = ".. status)
@@ -655,7 +657,7 @@ function OnOrder(order)
 					trt = getItem("trades", i)
 					if trt.trans_id == trans_id then
 						avg_qty = avg_qty + trt.qty
-						avg_sum = avg_sum + (trt.qty * trt.qty)
+						avg_sum = avg_sum + (trt.qty * trt.price)
 					end
 				
 				end
@@ -663,11 +665,11 @@ function OnOrder(order)
 						avg_price_sec = getParamEx2( a[4], a[5], "LAST").param_value
 				-- окончание вычисления цены исполнения
 		
-			end
+		end
 	
 
-		AddLog("Order #" .. tostring(trans_id) .. " full execute")
-		message("bit - " .. tostring(bit.test(order.flags, 2)))
+			AddLog("Order #" .. tostring(trans_id) .. " full execute")
+			message("bit - " .. tostring(bit.test(order.flags, 2)))
 	end	
 
 end
@@ -691,8 +693,24 @@ vuBildTable()
 		sec_price =getParamEx2( a[4], a[5], "LAST").param_value
 		SetCell (t_id, 20, 3, tostring(fut_price))
 		SetCell (t_id, 20, 2, tostring(sec_price))
-		SetCell (t_id, 23, 3, tostring(FUT_POS * FutLot * (a[13] - sec_price) - ( FUT_POS * (a[12] - fut_price ) )) )
+		SetCell (t_id, 22, 2, tostring( math.round( FUT_POS * FutLot * (sec_price - a[13]),2 ) ) )
+		SetCell (t_id, 22, 3, tostring( math.round( FUT_POS * (a[12] - fut_price ), 2 )))
 
+		if  FUT_POS * FutLot * (sec_price - a[13]) < 0 then
+			SetColor(t_id, 22, 2, RGB(255, 133, 183), RGB(0, 0, 0), RGB(255, 133, 183), RGB(0, 0, 0))
+			else
+			SetColor(t_id, 22, 2, RGB(80, 255, 40), RGB(0, 0, 0), RGB(80, 255, 40), RGB(0, 0, 0))
+		end
+
+		if FUT_POS * (a[12] - fut_price ) < 0 then
+			SetColor(t_id, 22, 3, RGB(255, 133, 183), RGB(0, 0, 0), RGB(255, 133, 183), RGB(0, 0, 0))
+		else
+			SetColor(t_id, 22, 3, RGB(80, 255, 40), RGB(0, 0, 0), RGB(80, 255, 40), RGB(0, 0, 0))
+		end
+
+
+		SetCell (t_id, 23, 3, tostring( math.round(  FUT_POS * FutLot * (sec_price - a[13]) + ( FUT_POS * (a[12] - fut_price ) ), 2 ) ) )
+		
 
 
 

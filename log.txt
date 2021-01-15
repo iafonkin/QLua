@@ -30,3 +30,49 @@ Tue Jan 12 18:27:08 2021 --- Script open
 Tue Jan 12 18:28:58 2021 --- Script close
 Tue Jan 12 18:31:51 2021 --- Script open
 Tue Jan 12 18:34:00 2021 --- Script close
+Fri Jan 15 14:44:23 2021 --- Script open
+Fri Jan 15 14:45:00 2021 --- new status = ON
+Fri Jan 15 14:45:03 2021 --- new status = HEDGE
+Fri Jan 15 14:45:03 2021 --- Order #1923638880 to sell 3.0 futures by price: 8036 send
+Fri Jan 15 14:45:04 2021 --- Order #1923638880 full execute
+Fri Jan 15 14:46:05 2021 --- Script close
+Fri Jan 15 14:46:20 2021 --- Script open
+Fri Jan 15 14:50:38 2021 --- Script close
+Fri Jan 15 14:52:09 2021 --- Script open
+Fri Jan 15 14:53:40 2021 --- Script close
+Fri Jan 15 14:54:13 2021 --- Script open
+Fri Jan 15 14:54:56 2021 --- new status = ON
+Fri Jan 15 14:55:04 2021 --- new status = HEDGE
+Fri Jan 15 14:55:04 2021 --- Order #1940277810 to sell 7.0 futures by price: 8052 send
+Fri Jan 15 14:55:04 2021 --- Order #1940277810 full execute
+Fri Jan 15 14:56:25 2021 --- Script close
+Fri Jan 15 14:56:32 2021 --- Script open
+Fri Jan 15 15:00:15 2021 --- new status = ON
+Fri Jan 15 15:00:15 2021 --- Order #1943958543 to Buy 7.0 futures by price: 8143 send
+Fri Jan 15 15:00:15 2021 --- Order #1943958543 full execute
+Fri Jan 15 15:00:25 2021 --- new status = HEDGE
+Fri Jan 15 15:00:25 2021 --- Order #295026743 to sell 220.0 futures by price: 8058 send
+Fri Jan 15 15:00:25 2021 --- new status = ON
+Fri Jan 15 15:00:25 2021 --- Order #2122212325 to Buy 220.0 futures by price: 8161 send
+Fri Jan 15 15:00:26 2021 --- Order #2122212325 full execute
+Fri Jan 15 15:00:35 2021 --- new status = HEDGE
+Fri Jan 15 15:00:35 2021 --- Order #466653252 to sell 220.0 futures by price: 8065 send
+Fri Jan 15 15:00:36 2021 --- Script close
+Fri Jan 15 15:50:26 2021 --- Script open
+Fri Jan 15 15:56:40 2021 --- Script close
+Fri Jan 15 15:56:48 2021 --- Script open
+Fri Jan 15 16:04:27 2021 --- Script close
+Fri Jan 15 16:04:29 2021 --- Script open
+Fri Jan 15 16:14:36 2021 --- Script close
+Fri Jan 15 16:14:39 2021 --- Script open
+Fri Jan 15 16:15:51 2021 --- Script close
+Fri Jan 15 16:15:55 2021 --- Script open
+Fri Jan 15 16:16:36 2021 --- Script close
+Fri Jan 15 16:17:13 2021 --- Script open
+Fri Jan 15 16:18:13 2021 --- Script close
+Fri Jan 15 16:18:17 2021 --- Script open
+Fri Jan 15 16:24:52 2021 --- Script close
+Fri Jan 15 16:24:55 2021 --- Script open
+Fri Jan 15 16:37:17 2021 --- Script close
+Fri Jan 15 17:03:40 2021 --- Script open
+Fri Jan 15 17:04:06 2021 --- Script close
