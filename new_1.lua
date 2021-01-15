@@ -458,7 +458,7 @@ function momentum()
 
 	--message("momentum - " .. res)
 
-	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
+	if status == "ON" and res < 100 and res1 >= 100 and res2 >=100 then
 		
 		status = "HEDGE"
 		AddLog ("new status = ".. status)
