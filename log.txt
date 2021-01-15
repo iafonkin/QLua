@@ -8,3 +8,71 @@ Tue Dec 15 14:58:56 2020 --- Script open
 Tue Dec 15 15:04:25 2020 --- Script close
 Tue Dec 15 15:09:18 2020 --- Script open
 Tue Dec 15 15:12:06 2020 --- Script close
+Fri Jan  8 18:56:45 2021 --- Script close
+Mon Jan 11 09:43:54 2021 --- Script open
+Mon Jan 11 19:31:13 2021 --- Script close
+Tue Jan 12 09:47:35 2021 --- Script open
+Tue Jan 12 18:04:44 2021 --- Script close
+Tue Jan 12 18:04:53 2021 --- Script open
+Tue Jan 12 18:06:16 2021 --- Script close
+Tue Jan 12 18:08:07 2021 --- Script open
+Tue Jan 12 18:08:48 2021 --- Script open
+Tue Jan 12 18:09:11 2021 --- Script close
+Tue Jan 12 18:11:14 2021 --- Script open
+Tue Jan 12 18:12:14 2021 --- Script close
+Tue Jan 12 18:16:46 2021 --- Script open
+Tue Jan 12 18:17:34 2021 --- Script close
+Tue Jan 12 18:18:58 2021 --- Script open
+Tue Jan 12 18:22:31 2021 --- Script close
+Tue Jan 12 18:23:59 2021 --- Script open
+Tue Jan 12 18:26:36 2021 --- Script close
+Tue Jan 12 18:27:08 2021 --- Script open
+Tue Jan 12 18:28:58 2021 --- Script close
+Tue Jan 12 18:31:51 2021 --- Script open
+Tue Jan 12 18:34:00 2021 --- Script close
+Fri Jan 15 14:44:23 2021 --- Script open
+Fri Jan 15 14:45:00 2021 --- new status = ON
+Fri Jan 15 14:45:03 2021 --- new status = HEDGE
+Fri Jan 15 14:45:03 2021 --- Order #1923638880 to sell 3.0 futures by price: 8036 send
+Fri Jan 15 14:45:04 2021 --- Order #1923638880 full execute
+Fri Jan 15 14:46:05 2021 --- Script close
+Fri Jan 15 14:46:20 2021 --- Script open
+Fri Jan 15 14:50:38 2021 --- Script close
+Fri Jan 15 14:52:09 2021 --- Script open
+Fri Jan 15 14:53:40 2021 --- Script close
+Fri Jan 15 14:54:13 2021 --- Script open
+Fri Jan 15 14:54:56 2021 --- new status = ON
+Fri Jan 15 14:55:04 2021 --- new status = HEDGE
+Fri Jan 15 14:55:04 2021 --- Order #1940277810 to sell 7.0 futures by price: 8052 send
+Fri Jan 15 14:55:04 2021 --- Order #1940277810 full execute
+Fri Jan 15 14:56:25 2021 --- Script close
+Fri Jan 15 14:56:32 2021 --- Script open
+Fri Jan 15 15:00:15 2021 --- new status = ON
+Fri Jan 15 15:00:15 2021 --- Order #1943958543 to Buy 7.0 futures by price: 8143 send
+Fri Jan 15 15:00:15 2021 --- Order #1943958543 full execute
+Fri Jan 15 15:00:25 2021 --- new status = HEDGE
+Fri Jan 15 15:00:25 2021 --- Order #295026743 to sell 220.0 futures by price: 8058 send
+Fri Jan 15 15:00:25 2021 --- new status = ON
+Fri Jan 15 15:00:25 2021 --- Order #2122212325 to Buy 220.0 futures by price: 8161 send
+Fri Jan 15 15:00:26 2021 --- Order #2122212325 full execute
+Fri Jan 15 15:00:35 2021 --- new status = HEDGE
+Fri Jan 15 15:00:35 2021 --- Order #466653252 to sell 220.0 futures by price: 8065 send
+Fri Jan 15 15:00:36 2021 --- Script close
+Fri Jan 15 15:50:26 2021 --- Script open
+Fri Jan 15 15:56:40 2021 --- Script close
+Fri Jan 15 15:56:48 2021 --- Script open
+Fri Jan 15 16:04:27 2021 --- Script close
+Fri Jan 15 16:04:29 2021 --- Script open
+Fri Jan 15 16:14:36 2021 --- Script close
+Fri Jan 15 16:14:39 2021 --- Script open
+Fri Jan 15 16:15:51 2021 --- Script close
+Fri Jan 15 16:15:55 2021 --- Script open
+Fri Jan 15 16:16:36 2021 --- Script close
+Fri Jan 15 16:17:13 2021 --- Script open
+Fri Jan 15 16:18:13 2021 --- Script close
+Fri Jan 15 16:18:17 2021 --- Script open
+Fri Jan 15 16:24:52 2021 --- Script close
+Fri Jan 15 16:24:55 2021 --- Script open
+Fri Jan 15 16:37:17 2021 --- Script close
+Fri Jan 15 17:03:40 2021 --- Script open
+Fri Jan 15 17:04:06 2021 --- Script close

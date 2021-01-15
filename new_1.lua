@@ -22,6 +22,10 @@ now_candle = 0
 RANDOM_SEED = tonumber(os.date("%Y%m%d%H%M%S")) -- для рандомной нумерации
 new_fut_name = ""
 
+avg_price = 0
+avg_price_sec = 0
+
+
 
 function random_max()
 	-- не принимает параметры и возвращает от 0 до 2147483647 (макс. полож. 32 битное число) подходит нам для транзакций
@@ -54,6 +58,8 @@ function OnStop()
 		a[11] = status
 		a[9] = FUT_POS
 		a[8] = SEC_POS
+		a[12] = avg_price
+		a[13] = avg_price_sec
 		for i=1,13 do
 			file:write(a[i] .. '\n')                        -- Прочитать первую строку в переменную x (без преобразования в число)
 		end
@@ -132,6 +138,8 @@ if file then                               -- Проверить, что он о
 		status = a[11]
 		FUT_POS = a[9]
 		SEC_POS = a[8]
+		avg_price = a[12]
+		avg_price_sec = a[13]
 		
 else
     message (err, 2)             -- Если не открылся, то вывести ошибку
@@ -277,8 +285,8 @@ function vuBildTable()
 	end
 
 	-- образ таблицы как бы
-	t_dat = {	{"Hedging a long stock position", a[4], "class code"},
-				{" ", a[5], "sec code"},
+	t_dat = {	{"Hedging a long stock position", a[4], "class code", " ", a[3]},
+				{" ", a[5], "sec code", " ", a[7]}, 
 				{" ", "quantity", " % "},
 				{"whole long stock position", tostring(Q_sec), " "},
 				{"part recommended for hedge", tostring(fut_vol_rec), tostring(fut_vol_rec_1), " ","step/lot"},
@@ -293,13 +301,13 @@ function vuBildTable()
 				{" ", tostring(T_date), tostring(T_time)},
 				{" ", "security", "futures"},
 				{"quantity", tostring(FUT_POS * FutLot), tostring(FUT_POS)},
-				{"price", a[12], a[13]},
-				{"sum", tostring(FUT_POS * FutLot * a[12]), tostring(FUT_POS * a[13])},
+				{"price", a[13], a[12]},
+				{"sum", tostring(FUT_POS * FutLot * a[13]), tostring(FUT_POS * a[12])},
 				{"----"},
 				{"actual quotes", 0.7, 7100},
 				{" ", 216563, 365415},
 				{"V", 45645, 55555},
-				{"actual result", " ", (FUT_POS * FutLot * (a[12] - sec_price) - ( FUT_POS * (a[13] - fut_price ) )) }
+				{"actual result", " ", (FUT_POS * FutLot * (a[13] - sec_price) - ( FUT_POS * (a[12] - fut_price ) )) }
 				
 				
 			}
@@ -321,7 +329,7 @@ function vuBildTable()
 		-- Создает таблицу
 		t = CreateWindow(t_id)
 		-- Устанавливает заголовок	
-		SetWindowCaption(t_id, "First windows")
+		SetWindowCaption(t_id, "Manager Hedge")
 		-- Задает положение и размеры окна таблицы
 		SetWindowPos(t_id, 200, 200, 520, 450)
 		-- Добавляет строки
@@ -450,7 +458,7 @@ function momentum()
 
 	--message("momentum - " .. res)
 
-	if status == "ON" and res < 100 and res1 >= 100 and res2 >=100 then
+	if status == "ON" and res > 100 and res1 >= 100 and res2 >=100 then
 		
 		status = "HEDGE"
 		AddLog ("new status = ".. status)
@@ -635,16 +643,38 @@ function OnOrder(order)
 		if bit.test(order.flags, 2) then
 			a[8] = 0
 			a[9] = 0
+			a[12] = 0
+			a[13] = 0
 			else
 				a[9] = pos_quantity
 				a[8] = Q_sec_h
+				-- вычисление руальной цены исполнения заявки
+					avg_price = 0
+					avg_qty = 0
+					avg_sum = 0
+					trt ={}	
+				for i=1, getNumberOf("trades")-1 do
+					trt = getItem("trades", i)
+					if trt.trans_id == trans_id then
+						avg_qty = avg_qty + trt.qty
+						avg_sum = avg_sum + (trt.qty * trt.price)
+					end
+				
+				end
+						avg_price = avg_sum / avg_qty
+						avg_price_sec = getParamEx2( a[4], a[5], "LAST").param_value
+				-- окончание вычисления цены исполнения
+		
 		end
-		AddLog("Order #" .. tostring(trans_id) .. " full execute")
-		message("bit - " .. tostring(bit.test(order.flags, 2)))
+	
+
+			AddLog("Order #" .. tostring(trans_id) .. " full execute")
+			message("bit - " .. tostring(bit.test(order.flags, 2)))
 	end	
 
 end
-
+	
+ 
 
 --Основное тело скрипта
 function main()
@@ -663,8 +693,24 @@ vuBildTable()
 		sec_price =getParamEx2( a[4], a[5], "LAST").param_value
 		SetCell (t_id, 20, 3, tostring(fut_price))
 		SetCell (t_id, 20, 2, tostring(sec_price))
-		SetCell (t_id, 23, 3, tostring(FUT_POS * FutLot * (a[12] - sec_price) - ( FUT_POS * (a[13] - fut_price ) )) )
+		SetCell (t_id, 22, 2, tostring( math.round( FUT_POS * FutLot * (sec_price - a[13]),2 ) ) )
+		SetCell (t_id, 22, 3, tostring( math.round( FUT_POS * (a[12] - fut_price ), 2 )))
 
+		if  FUT_POS * FutLot * (sec_price - a[13]) < 0 then
+			SetColor(t_id, 22, 2, RGB(255, 133, 183), RGB(0, 0, 0), RGB(255, 133, 183), RGB(0, 0, 0))
+			else
+			SetColor(t_id, 22, 2, RGB(80, 255, 40), RGB(0, 0, 0), RGB(80, 255, 40), RGB(0, 0, 0))
+		end
+
+		if FUT_POS * (a[12] - fut_price ) < 0 then
+			SetColor(t_id, 22, 3, RGB(255, 133, 183), RGB(0, 0, 0), RGB(255, 133, 183), RGB(0, 0, 0))
+		else
+			SetColor(t_id, 22, 3, RGB(80, 255, 40), RGB(0, 0, 0), RGB(80, 255, 40), RGB(0, 0, 0))
+		end
+
+
+		SetCell (t_id, 23, 3, tostring( math.round(  FUT_POS * FutLot * (sec_price - a[13]) + ( FUT_POS * (a[12] - fut_price ) ), 2 ) ) )
+		
 
 
 
